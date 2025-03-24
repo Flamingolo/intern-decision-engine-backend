@@ -2,10 +2,7 @@ package ee.taltech.inbankbackend.service;
 
 import com.github.vladislavgoltjajev.personalcode.locale.estonia.EstonianPersonalCodeValidator;
 import ee.taltech.inbankbackend.config.DecisionEngineConstants;
-import ee.taltech.inbankbackend.exceptions.InvalidLoanAmountException;
-import ee.taltech.inbankbackend.exceptions.InvalidLoanPeriodException;
-import ee.taltech.inbankbackend.exceptions.InvalidPersonalCodeException;
-import ee.taltech.inbankbackend.exceptions.NoValidLoanException;
+import ee.taltech.inbankbackend.exceptions.*;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,7 +15,12 @@ public class DecisionEngine {
 
     // Used to check for the validity of the presented ID code.
     private final EstonianPersonalCodeValidator validator = new EstonianPersonalCodeValidator();
+    private final AgeService ageService;
     private int creditModifier = 0;
+
+    public DecisionEngine(AgeService ageService) {
+        this.ageService = ageService;
+    }
 
     public float creditScoreCalc(int creditModifier, int loanAmount, int loanPeriod) {
         return (float) ((creditModifier / loanPeriod) * loanAmount) / 10;
@@ -41,12 +43,23 @@ public class DecisionEngine {
      */
     public Decision calculateApprovedLoan(String personalCode, Long loanAmount, int loanPeriod)
             throws InvalidPersonalCodeException, InvalidLoanAmountException, InvalidLoanPeriodException,
-            NoValidLoanException {
+            NoValidLoanException, InvalidAgeException {
+
+//        if (personalCode.length() != 11){
+//            throw new InvalidPersonalCodeException("Invalid personal code");
+//        }
         try {
             verifyInputs(personalCode, loanAmount, loanPeriod);
         } catch (Exception e) {
             return new Decision(null, null, e.getMessage());
         }
+
+        boolean eligible = ageService.isEligible(personalCode);
+
+        if (!eligible) {
+            throw new InvalidAgeException("Invalid age");
+        }
+
 
         creditModifier = getCreditModifier(personalCode);
 
