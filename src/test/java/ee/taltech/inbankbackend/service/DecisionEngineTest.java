@@ -79,8 +79,8 @@ class DecisionEngineTest {
     @Test
     void testPerson1MaxAmount() throws InvalidLoanPeriodException, NoValidLoanException,
             InvalidPersonalCodeException, InvalidLoanAmountException, InvalidAgeException {
-        Decision decision = decisionEngine.calculateApprovedLoan(segment2PersonalCode, 10000L, 12);
-        assertEquals(10000, decision.getLoanAmount());
+        Decision decision = decisionEngine.calculateApprovedLoan(segment2PersonalCode, 3000L, 12);
+        assertEquals(3600, decision.getLoanAmount());
         assertEquals(12, decision.getLoanPeriod());
     }
 
