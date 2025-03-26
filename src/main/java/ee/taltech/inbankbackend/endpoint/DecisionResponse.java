@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Setter
 @Component
 public class DecisionResponse {
-    private Integer loanAmount;
+    private Long loanAmount;
     private Integer loanPeriod;
     private String errorMessage;
 }

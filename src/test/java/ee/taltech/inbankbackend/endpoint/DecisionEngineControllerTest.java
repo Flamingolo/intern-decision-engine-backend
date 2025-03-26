@@ -53,7 +53,7 @@ public class DecisionEngineControllerTest {
     public void givenValidRequest_whenRequestDecision_thenReturnsExpectedResponse()
             throws Exception, InvalidLoanPeriodException, NoValidLoanException, InvalidPersonalCodeException,
             InvalidLoanAmountException, InvalidAgeException {
-        Decision decision = new Decision(1000, 12, null);
+        Decision decision = new Decision(1000L, 12, null);
         when(decisionEngine.calculateLoan(anyString(), anyLong(), anyInt())).thenReturn(decision);
 
         DecisionRequest request = new DecisionRequest("1234", 10L, 10);
@@ -63,13 +63,13 @@ public class DecisionEngineControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.loanAmount").value(1000))
+                .andExpect(jsonPath("$.loanAmount").value(1000L))
                 .andExpect(jsonPath("$.loanPeriod").value(12))
                 .andExpect(jsonPath("$.errorMessage").isEmpty())
                 .andReturn();
 
         DecisionResponse response = objectMapper.readValue(result.getResponse().getContentAsString(), DecisionResponse.class);
-        assert response.getLoanAmount() == 1000;
+        assert response.getLoanAmount() == 1000L;
         assert response.getLoanPeriod() == 12;
         assert response.getErrorMessage() == null;
     }

@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class Decision {
-    private final Integer loanAmount;
+    private final Long loanAmount;
     private final Integer loanPeriod;
     private final String errorMessage;
 }

@@ -1,6 +1,5 @@
 package ee.taltech.inbankbackend.service;
 
-import ee.taltech.inbankbackend.factory.DecisionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

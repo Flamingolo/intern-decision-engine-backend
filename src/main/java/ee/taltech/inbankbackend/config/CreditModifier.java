@@ -7,17 +7,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum CreditModifier {
 
-    SEGMENT_0(0, 2499, 0),
-    SEGMENT_1(2500, 4999, 100),
-    SEGMENT_2(5000, 7499, 300),
-    SEGMENT_3(7500, Integer.MAX_VALUE, 1000);
+    SEGMENT_0(0L, 2499L, 0L),
+    SEGMENT_1(2500L, 4999L, 100L),
+    SEGMENT_2(5000L, 7499L, 300L),
+    SEGMENT_3(7500L, Long.MAX_VALUE, 1000L);
 
-    private final int min;
-    private final int max;
-    private final int modifier;
+    private final long min;
+    private final long max;
+    private final long modifier;
 
-    public static int from(String personalCode) {
-        int segment = Integer.parseInt(personalCode.substring(personalCode.length() - 4));
+    public static long from(String personalCode) {
+        long segment = Long.parseLong(personalCode.substring(personalCode.length() - 4));
         for (CreditModifier cm : values()) {
             if (segment >= cm.min && segment <= cm.max) {
                 return cm.getModifier();

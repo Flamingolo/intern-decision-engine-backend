@@ -9,8 +9,8 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class Loan {
 
-    private Integer amount;
-    private Integer periodMonths;
-    private int creditModifier;
+    private Long amount;
+    private int periodMonths;
+    private Long creditModifier;
 
 }

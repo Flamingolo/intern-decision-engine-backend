@@ -13,5 +13,4 @@ public class DecisionFactory {
         }
         return new Decision(loan.getAmount(), loan.getPeriodMonths(), errorMessage);
     }
-
 }
