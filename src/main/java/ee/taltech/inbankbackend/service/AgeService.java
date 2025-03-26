@@ -29,9 +29,6 @@ public class AgeService {
     @SneakyThrows
     public boolean isEligible(String personalCode) {
 
-//        if (personalCode.length() != 11){
-//            throw new InvalidPersonalCodeException("Invalid personal code");
-//        }
         int age = calculateAgeFromPersonalCode(personalCode);
         int maximumLoanPeriod = EXPECTED_LIFE_SPAN - (LoanParameters.MAXIMUM.getPeriodMonths() / TWELVE_MONTHS);
         if (age < 18) {
