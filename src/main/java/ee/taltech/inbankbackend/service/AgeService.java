@@ -1,7 +1,6 @@
 package ee.taltech.inbankbackend.service;
 
-import ee.taltech.inbankbackend.config.DecisionEngineConstants;
-import ee.taltech.inbankbackend.exceptions.InvalidPersonalCodeException;
+import ee.taltech.inbankbackend.config.LoanParameters;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +33,7 @@ public class AgeService {
 //            throw new InvalidPersonalCodeException("Invalid personal code");
 //        }
         int age = calculateAgeFromPersonalCode(personalCode);
-        int maximumLoanPeriod = EXPECTED_LIFE_SPAN - (DecisionEngineConstants.MAXIMUM_LOAN_PERIOD / TWELVE_MONTHS);
+        int maximumLoanPeriod = EXPECTED_LIFE_SPAN - (LoanParameters.MAXIMUM.getPeriodMonths() / TWELVE_MONTHS);
         if (age < 18) {
             return false;
         }

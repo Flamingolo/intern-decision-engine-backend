@@ -49,13 +49,19 @@ public class DecisionEngineController {
             response.setErrorMessage(decision.getErrorMessage());
 
             return ResponseEntity.ok(response);
-        } catch (InvalidPersonalCodeException | InvalidLoanAmountException | InvalidLoanPeriodException | InvalidAgeException | NoValidLoanException e) {
+        } catch (InvalidPersonalCodeException | InvalidLoanAmountException | InvalidLoanPeriodException | InvalidAgeException e) {
             response.setLoanAmount(null);
             response.setLoanPeriod(null);
             response.setErrorMessage(e.getMessage());
 
             return ResponseEntity.badRequest().body(response);
-        } catch (Exception e) {
+        }  catch (NoValidLoanException e) {
+            response.setLoanAmount(null);
+            response.setLoanPeriod(null);
+            response.setErrorMessage(e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }  catch (Exception e) {
             response.setLoanAmount(null);
             response.setLoanPeriod(null);
             response.setErrorMessage("An unexpected error occurred");
