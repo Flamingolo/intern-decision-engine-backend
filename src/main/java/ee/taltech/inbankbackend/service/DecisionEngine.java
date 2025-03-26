@@ -4,6 +4,7 @@ import com.github.vladislavgoltjajev.personalcode.locale.estonia.EstonianPersona
 import ee.taltech.inbankbackend.config.CreditModifier;
 import ee.taltech.inbankbackend.config.LoanParameters;
 import ee.taltech.inbankbackend.exceptions.*;
+import ee.taltech.inbankbackend.factory.DecisionFactory;
 import ee.taltech.inbankbackend.pojo.Loan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ public class DecisionEngine {
     private static final float LOWEST_CREDIT_SCORE = 0.1f;
 
     private final EstonianPersonalCodeValidator validator = new EstonianPersonalCodeValidator();
+    private final DecisionFactory decisionFactory;
     private final AgeService ageService;
 
     public Decision calculateLoan(String personalCode, Long requestedLoanAmount, int requestedLoanPeriod) throws
@@ -38,13 +40,18 @@ public class DecisionEngine {
             throw new NoValidLoanException("No valid loan found!");
         }
 
-        Loan biggestAmountForRequestedPeriod = getBiggestLoan(creditModifier, requestedLoanPeriod);
-        if (canGetLoan(biggestAmountForRequestedPeriod, creditModifier) && biggestAmountForRequestedPeriod.getAmount() >= requestedLoanAmount) {
-            return new Decision(
-                    (int) Math.max(biggestAmountForRequestedPeriod.getAmount(), requestedLoanAmount),
-                    biggestAmountForRequestedPeriod.getPeriodMonths(),
-                    null
-            );
+        int highestLoanAmount = getHighestLoanAmount(
+                creditModifier,
+                requestedLoanPeriod,
+                requestedLoanAmount.intValue()
+        );
+        Loan biggestAmountForRequestedPeriod = new Loan()
+                .setAmount(highestLoanAmount)
+                .setPeriodMonths(requestedLoanPeriod)
+                .setCreditModifier(creditModifier);
+
+        if (isEligibleForLoan(biggestAmountForRequestedPeriod) && biggestAmountForRequestedPeriod.getAmount() >= requestedLoanAmount) {
+            return decisionFactory.createDecision(biggestAmountForRequestedPeriod, null);
         }
 
         int longestPeriodForRequestedAmount = getLongestLoanPeriodMonths(
@@ -53,27 +60,22 @@ public class DecisionEngine {
         );
         Loan requestedLoanLongestPeriod = new Loan()
                 .setPeriodMonths(longestPeriodForRequestedAmount)
-                .setAmount(Math.toIntExact(requestedLoanAmount));
-        if (canGetLoan(requestedLoanLongestPeriod, creditModifier)) {
-            return new Decision(
-                    Math.min(requestedLoanLongestPeriod.getAmount(), LoanParameters.MAXIMUM.getAmount()),
-                    requestedLoanLongestPeriod.getPeriodMonths(),
-                    null
-            );
+                .setAmount(Math.toIntExact(requestedLoanAmount))
+                .setCreditModifier(creditModifier);
+        if (isEligibleForLoan(requestedLoanLongestPeriod)) {
+            return decisionFactory.createDecision(requestedLoanLongestPeriod, null);
+
         }
 
         Loan highestAmountForRequestedPeriod = new Loan()
                 .setPeriodMonths(requestedLoanPeriod)
-                .setAmount(Math.toIntExact(biggestAmountForRequestedPeriod.getAmount()));
-        if (canGetLoan(highestAmountForRequestedPeriod, creditModifier)) {
-            return new Decision(
-                    highestAmountForRequestedPeriod.getAmount(),
-                    highestAmountForRequestedPeriod.getPeriodMonths(),
-                    null
-            );
+                .setAmount(Math.toIntExact(biggestAmountForRequestedPeriod.getAmount()))
+                .setCreditModifier(creditModifier);
+        if (isEligibleForLoan(highestAmountForRequestedPeriod)) {
+            return decisionFactory.createDecision(highestAmountForRequestedPeriod, null);
         }
 
-        return new Decision(null, null, "No valid loan found after all attempts");
+        return decisionFactory.createDecision(null,"No valid loan found after all attempts");
     }
 
     private float getCreditScore(int creditModifier, int loanAmount, int loanPeriod) {
@@ -84,25 +86,19 @@ public class DecisionEngine {
         return (int) Math.ceil((LOWEST_CREDIT_SCORE * 10.0 * loanAmount) / creditModifier);
     }
 
-    private int getHighestLoanAmount(int creditModifier, int loanPeriodMonths) {
-        return (int) ((creditModifier * loanPeriodMonths) / (LOWEST_CREDIT_SCORE * 10));
+    private int getHighestLoanAmount(int creditModifier, int loanPeriodMonths, int requestedLoanAmount) {
+        int calculatedAmount = (int) ((creditModifier * loanPeriodMonths) / (LOWEST_CREDIT_SCORE * 10));
+        if (calculatedAmount <= requestedLoanAmount) {
+            return calculatedAmount;
+        }
+        return Math.max(calculatedAmount, requestedLoanAmount);
     }
 
-    private Loan getBiggestLoan(int creditModifier, int loanPeriodMonths) {
-        int highestLoanAmount = getHighestLoanAmount(
-                creditModifier,
-                loanPeriodMonths
-        );
-        return new Loan()
-                .setAmount(highestLoanAmount)
-                .setPeriodMonths(loanPeriodMonths);
-    }
-
-    private boolean canGetLoan(Loan loan, int creditModifier) {
+    private boolean isEligibleForLoan(Loan loan) {
         if (loan.getPeriodMonths() > LoanParameters.MAXIMUM.getPeriodMonths()) {
             return false;
         }
-        float score = getCreditScore(creditModifier, loan.getAmount(), loan.getPeriodMonths());
+        float score = getCreditScore(loan.getCreditModifier(), loan.getAmount(), loan.getPeriodMonths());
         return score >= LOWEST_CREDIT_SCORE;
     }
 

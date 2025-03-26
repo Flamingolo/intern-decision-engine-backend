@@ -2,11 +2,14 @@ package ee.taltech.inbankbackend.service;
 
 import ee.taltech.inbankbackend.config.LoanParameters;
 import ee.taltech.inbankbackend.exceptions.*;
+import ee.taltech.inbankbackend.factory.DecisionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -18,26 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 
 @ExtendWith(MockitoExtension.class)
-class DecisionEngineTest {
-
-    @InjectMocks
-    private DecisionEngine decisionEngine;
-
-    private String debtorPersonalCode;
-    private String segment1PersonalCode;
-    private String segment2PersonalCode;
-    private String segment3PersonalCode;
-
-    @BeforeEach
-    void setUp() {
-        debtorPersonalCode = "37605030299";
-        segment1PersonalCode = "50307172740";
-        segment2PersonalCode = "38411266610";
-        segment3PersonalCode = "35006069515";
-
-        AgeService ageService = new AgeService();
-        decisionEngine = new DecisionEngine(ageService);
-    }
+class DecisionEngineTest extends BaseTest {
 
     @Test
     void testDebtorPersonalCode() {

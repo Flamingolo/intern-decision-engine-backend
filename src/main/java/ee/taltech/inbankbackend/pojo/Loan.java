@@ -11,5 +11,6 @@ public class Loan {
 
     private Integer amount;
     private Integer periodMonths;
+    private int creditModifier;
 
 }
